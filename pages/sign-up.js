@@ -44,3 +44,20 @@ const SignUp = () => {
 };
 
 export default SignUp;
+
+export async function getServerSideProps(context) {
+  const { token } = context.req.cookies;
+
+  if (token) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+}

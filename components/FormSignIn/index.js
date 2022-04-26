@@ -4,6 +4,7 @@ import TextInput from "../TextInput";
 import { useRouter } from "next/router";
 import { postData } from "../../utils/fetchData";
 import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
 const FormSignIn = () => {
   const router = useRouter();
@@ -22,12 +23,11 @@ const FormSignIn = () => {
 
   const handleSubmit = async () => {
     try {
-      const response = await postData("api/v1/participant/sign-in", form);
-      Cookies.set("token", response.data?.data?.token);
+      const response = await postData("api/v1/auth/participant/sign-in", form);
+      Cookies.set("token", response?.data?.token);
       router.push("/");
-    } catch (error) {
-      console.log(error?.response);
-    }
+      toast.success("Selamat, Anda berhasil sign in.");
+    } catch (error) {}
   };
 
   return (

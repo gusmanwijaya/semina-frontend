@@ -1,23 +1,30 @@
-import axios from "axios";
-import Cookies from "js-cookie";
+import axios from "../configs";
 
-export async function getData(url, params) {
-  const token = Cookies.get("token");
+const getData = async (url, params, token) => {
+  if (!token) {
+    return await axios.get(`${url}`, {
+      params,
+    });
+  } else {
+    return await axios.get(`${url}`, {
+      params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+};
 
-  return await axios.get(`${process.env.NEXT_PUBLIC_API}/${url}`, {
-    params,
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-}
+const postData = async (url, payload, token) => {
+  if (!token) {
+    return await axios.post(`${url}`, payload);
+  } else {
+    return await axios.post(`${url}`, payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+};
 
-export async function postData(url, payload) {
-  const token = Cookies.get("token");
-
-  return await axios.post(`${process.env.NEXT_PUBLIC_API}/${url}`, payload, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-}
+export { getData, postData };

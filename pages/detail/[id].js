@@ -11,28 +11,32 @@ import { useRouter } from "next/router";
 import { getData } from "../../utils/fetchData";
 import moment from "moment";
 import { formatDate } from "../../utils/formatDate";
+import Cookies from "js-cookie";
 
-const Detail = ({ data }) => {
-  const router = useRouter();
-
-  const [dataLandingPage, setDataLandingPage] = useState([]);
-
-  const fetchData = async () => {
-    try {
-      const response = await getData("api/v1/participant/landing-page");
-
-      setDataLandingPage(response.data?.data);
-    } catch (error) {
-      console.log(error?.response?.data);
-    }
-  };
+const Detail = ({ detailPage, id }) => {
+  const [data, setData] = useState([]);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getData("api/v1/participant/landing-page");
+
+        setData(response.data);
+      } catch (err) {}
+    };
+
     fetchData();
   }, []);
 
+  const router = useRouter();
+
   const handleSubmit = () => {
-    router.push("/checkout");
+    const token = Cookies.get("token");
+    if (!token) {
+      return router.push("/sign-in");
+    } else {
+      router.push(`/checkout/${id}`);
+    }
   };
 
   return (
@@ -57,13 +61,13 @@ const Detail = ({ data }) => {
       <div className="details-content container">
         <div className="d-flex flex-wrap justify-content-lg-center gap">
           <div className="d-flex flex-column description">
-            <div className="headline">{data.tagline}</div>
+            <div className="headline">{detailPage.tagline}</div>
             <div className="event-details">
               <h6>Event Details</h6>
-              <p className="details-paragraph">{data.about}</p>
+              <p className="details-paragraph">{detailPage.about}</p>
             </div>
             <div className="keypoints">
-              {data.keyPoint.map((key, i) => {
+              {detailPage.keyPoint.map((key, i) => {
                 return (
                   <div className="d-flex align-items-start gap-3" key={i}>
                     <img src="/icons/ic-check.svg" alt="semina" />
@@ -95,39 +99,40 @@ const Detail = ({ data }) => {
             <div className="d-flex align-items-center gap-3 mt-3">
               <img
                 src={
-                  data?.speaker?.avatar !== "images/avatar.png"
-                    ? `${process.env.NEXT_PUBLIC_API_IMAGE}/speaker/${data?.speaker?.avatar}`
-                    : `${process.env.NEXT_PUBLIC_API}/${data?.speaker?.avatar}`
+                  detailPage?.speaker?.avatar !== "images/avatar.png"
+                    ? `${process.env.NEXT_PUBLIC_API_IMAGE}/speaker/${detailPage?.speaker?.avatar}`
+                    : `${process.env.NEXT_PUBLIC_API}/${detailPage?.speaker?.avatar}`
                 }
                 alt="semina"
                 width="60"
               />
               <div>
-                <div className="speaker-name">{data?.speaker?.name}</div>
-                <span className="occupation">{data?.speaker?.role}</span>
+                <div className="speaker-name">{detailPage?.speaker?.name}</div>
+                <span className="occupation">{detailPage?.speaker?.role}</span>
               </div>
             </div>
             <hr />
 
             <h6>Get Ticket</h6>
             <div className="price my-3">
-              {data.price === 0 ? "free" : `$${data.price}`}
+              {detailPage.price === 0 ? "free" : `$${detailPage.price}`}
               <span>/person</span>
             </div>
             <div className="d-flex gap-3 align-items-center card-details">
-              <img src="/icons/ic-marker.svg" alt="semina" /> {data.venueName}
+              <img src="/icons/ic-marker.svg" alt="semina" />{" "}
+              {detailPage.venueName}
             </div>
             <div className="d-flex gap-3 align-items-center card-details">
               <img src="/icons/ic-time.svg" alt="semina" />{" "}
-              {moment(data.date).format("HH.MM A")}
+              {moment(detailPage.date).format("HH.MM A")}
             </div>
             <div className="d-flex gap-3 align-items-center card-details">
               <img src="/icons/ic-calendar.svg" alt="semina" />{" "}
-              {formatDate(data.date)}
+              {formatDate(detailPage.date)}
             </div>
 
-            {data.stock !== 0 && (
-              <Button variant={"btn-green"} action={handleSubmit}>
+            {detailPage.stock !== 0 && (
+              <Button variant={"btn-green"} action={() => handleSubmit()}>
                 Join Now
               </Button>
             )}
@@ -135,11 +140,7 @@ const Detail = ({ data }) => {
         </div>
       </div>
 
-      <CardEvent
-        data={dataLandingPage}
-        title="Similiar Events"
-        subTitle="Next One"
-      />
+      <CardEvent data={data} title="Similiar Events" subTitle="Next One" />
       <Story />
       <Statistic />
       <Footer />
@@ -151,11 +152,12 @@ export default Detail;
 
 export async function getServerSideProps({ params }) {
   const response = await getData(`api/v1/participant/detail-page/${params.id}`);
-  const data = response.data?.data;
+  const data = response?.data;
 
   return {
     props: {
-      data,
+      detailPage: data,
+      id: params.id,
     },
   };
 }

@@ -29,7 +29,7 @@ export default function Home({ data }) {
 
 export async function getServerSideProps() {
   const response = await getData("api/v1/participant/landing-page");
-  const data = response.data?.data;
+  const data = response?.data;
 
   return {
     props: {

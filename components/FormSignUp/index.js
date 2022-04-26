@@ -3,6 +3,7 @@ import Button from "../Button";
 import TextInput from "../TextInput";
 import { useRouter } from "next/router";
 import { postData } from "../../utils/fetchData";
+import { toast } from "react-toastify";
 
 const FormSignUp = () => {
   const router = useRouter();
@@ -22,13 +23,15 @@ const FormSignUp = () => {
     });
   };
 
-  const handleSubmit = async () => {
-    try {
-      const response = await postData("api/v1/participant/sign-up", form);
-      router.push("/sign-in");
-    } catch (error) {
-      console.log(error?.response?.data);
-    }
+  const handleSubmit = () => {
+    postData("api/v1/auth/participant/sign-up", form)
+      .then((res) => {
+        if (res.data) {
+          toast.success("Selamat, Anda berhasil sign up.");
+          router.push("/sign-in");
+        }
+      })
+      .catch((err) => {});
   };
 
   return (
@@ -37,6 +40,7 @@ const FormSignUp = () => {
         label={"First Name"}
         type={"text"}
         value={form.firstName}
+        name="firstName"
         placeholder="First name here"
         onChange={handleChange}
       />
@@ -44,6 +48,7 @@ const FormSignUp = () => {
         label={"Last Name"}
         type={"text"}
         value={form.lastName}
+        name="lastName"
         placeholder="Last name here"
         onChange={handleChange}
       />
@@ -52,6 +57,7 @@ const FormSignUp = () => {
         label={"Email"}
         type={"email"}
         value={form.email}
+        name="email"
         placeholder={"semina@bwa.com"}
         onChange={handleChange}
       />
@@ -60,6 +66,7 @@ const FormSignUp = () => {
         label={"Password (6 characters)"}
         type={"password"}
         value={form.password}
+        name="password"
         placeholder="Type your password"
         onChange={handleChange}
       />
@@ -68,6 +75,7 @@ const FormSignUp = () => {
         label={"Role"}
         type={"text"}
         value={form.role}
+        name="role"
         placeholder="ex: Product Designer"
         onChange={handleChange}
       />
